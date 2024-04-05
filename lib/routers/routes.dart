@@ -9,4 +9,4 @@ final Map<String, Widget Function(BuildContext)> appRoutes = {
   UsuariosScreen.routeName: (_) => const UsuariosScreen(),
 };
 
-final String iniAppRoute = LoginScreen.routeName;
+final String iniAppRoute = ChatScreen.routeName;
