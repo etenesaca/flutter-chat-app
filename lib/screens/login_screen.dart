@@ -1,6 +1,9 @@
+import 'package:chat/helpers/mostrar_alerta.dart';
 import 'package:chat/screens/screens.dart';
+import 'package:chat/services/services.dart';
 import 'package:chat/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatelessWidget {
   static const routeName = 'Login';
@@ -52,6 +55,8 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final AuthService authService =
+        Provider.of<AuthService>(context, listen: true);
     return Container(
       margin: const EdgeInsets.only(top: 50),
       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -71,11 +76,21 @@ class __FormState extends State<_Form> {
           ),
           // TODO: Crear boton
           BotonAzul(
-            onPress: () {
-              print('Hola');
-              print(emailCtrl.text);
-              print(passCtrl.text);
-            },
+            onPressed: authService.autenticando
+                ? null
+                : () async {
+                    FocusScope.of(context).unfocus();
+                    bool loginOk =
+                        await authService.Login(emailCtrl.text, passCtrl.text);
+                    if (loginOk) {
+                      mostrarAlerta(
+                          context, 'Login ok', authService.usuario!.nombre);
+                      Navigator.of(context)
+                          .pushReplacementNamed(UsuariosScreen.routeName);
+                    } else {
+                      mostrarAlerta(context, 'Ups!', authService.loginProblems);
+                    }
+                  },
             text: 'Ingrese',
           )
         ],

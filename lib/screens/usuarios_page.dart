@@ -1,5 +1,8 @@
 import 'package:chat/models/models.dart';
+import 'package:chat/screens/login_screen.dart';
+import 'package:chat/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class UsuariosScreen extends StatefulWidget {
@@ -24,12 +27,19 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AuthService authService =
+        Provider.of<AuthService>(context, listen: true);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi nombre'),
+        title: Text(authService.usuario!.nombre),
         elevation: 1,
         backgroundColor: Colors.white,
-        leading: IconButton(onPressed: () {}, icon: Icon(Icons.exit_to_app)),
+        leading: IconButton(
+            onPressed: () {
+              AuthService.deleteToken();
+              Navigator.pushReplacementNamed(context, LoginScreen.routeName);
+            },
+            icon: Icon(Icons.exit_to_app)),
         actions: [
           Container(
             margin: EdgeInsets.only(right: 10),
@@ -62,8 +72,8 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
   ListTile _usuarioListTile(Usuario usuario) {
     return ListTile(
-      title: Text(usuario.nombre!),
-      subtitle: Text(usuario.email!),
+      title: Text(usuario.nombre),
+      subtitle: Text(usuario.email),
       leading: CircleAvatar(
         backgroundColor: Colors.blue[200],
         child: Text(usuario.nombre!.substring(0, 2)),

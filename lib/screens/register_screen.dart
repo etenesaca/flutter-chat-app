@@ -1,6 +1,10 @@
 import 'package:chat/screens/screens.dart';
+import 'package:chat/services/auth_service.dart';
 import 'package:chat/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../helpers/mostrar_alerta.dart';
 
 class RegisterScreen extends StatelessWidget {
   static const routeName = 'Register';
@@ -53,6 +57,9 @@ class __FormState extends State<_Form> {
 
   @override
   Widget build(BuildContext context) {
+    final AuthService authService =
+        Provider.of<AuthService>(context, listen: true);
+
     return Container(
       margin: const EdgeInsets.only(top: 50),
       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -78,12 +85,23 @@ class __FormState extends State<_Form> {
           ),
           // TODO: Crear boton
           BotonAzul(
-            onPress: () {
-              print('Hola');
-              print(emailCtrl.text);
-              print(passCtrl.text);
-            },
-            text: 'Ingrese',
+            onPressed: authService.autenticando
+                ? null
+                : () async {
+                    FocusScope.of(context).unfocus();
+                    bool RegisterOk = await authService.newUser(
+                        nameCtrl.text, emailCtrl.text, passCtrl.text);
+                    if (RegisterOk) {
+                      mostrarAlerta(context, 'Usuario creado correctamente',
+                          authService.usuario!.nombre);
+                      Navigator.of(context)
+                          .pushReplacementNamed(LoginScreen.routeName);
+                    } else {
+                      mostrarAlerta(
+                          context, 'Ups!', authService.registerUserProblems);
+                    }
+                  },
+            text: 'Crear cuenta',
           )
         ],
       ),
