@@ -1,35 +1,49 @@
 import 'package:chat/models/models.dart';
 import 'package:chat/screens/login_screen.dart';
+import 'package:chat/screens/screens.dart';
 import 'package:chat/services/services.dart';
+import 'package:chat/services/usuarios_response.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class UsuariosScreen extends StatefulWidget {
   static const routeName = 'Usuarios';
-  const UsuariosScreen({Key? key}) : super(key: key);
+  const UsuariosScreen({super.key});
 
   @override
   State<UsuariosScreen> createState() => _UsuariosScreenState();
 }
 
 class _UsuariosScreenState extends State<UsuariosScreen> {
-  RefreshController _refreshController =
+  final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
 
-  final usuarios = [
-    Usuario(uid: '1', nombre: 'María', email: 'test1@test.com', online: true),
-    Usuario(
-        uid: '2', nombre: 'Melissa', email: 'test2@test.com', online: false),
-    Usuario(
-        uid: '3', nombre: 'Fernando', email: 'test3@test.com', online: true),
-  ];
+  final ususariosService = UsuariosService();
+  List<Usuario> usuarios = [];
+
+  // final usuarios = [
+  //   Usuario(uid: '1', nombre: 'María', email: 'test1@test.com', online: true),
+  //   Usuario(
+  //       uid: '2', nombre: 'Melissa', email: 'test2@test.com', online: false),
+  //   Usuario(
+  //       uid: '3', nombre: 'Fernando', email: 'test3@test.com', online: true),
+  // ];
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarUsuarios();
+  }
 
   @override
   Widget build(BuildContext context) {
     final AuthService authService =
         Provider.of<AuthService>(context, listen: true);
-    return Scaffold(
+    final SocketService socketService =
+        Provider.of<SocketService>(context, listen: true);
+
+    final _screen = Scaffold(
       appBar: AppBar(
         title: Text(authService.usuario!.nombre),
         elevation: 1,
@@ -37,15 +51,16 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
         leading: IconButton(
             onPressed: () {
               AuthService.deleteToken();
+              socketService.disconnect();
               Navigator.pushReplacementNamed(context, LoginScreen.routeName);
             },
-            icon: Icon(Icons.exit_to_app)),
+            icon: const Icon(Icons.exit_to_app)),
         actions: [
           Container(
             margin: EdgeInsets.only(right: 10),
-            child:
-                //Icon(Icons.check_circle, color: Colors.blue[400]),
-                Icon(Icons.offline_bolt, color: Colors.red),
+            child: socketService.serverStatus == ServerStatus.Online
+                ? Icon(Icons.check_circle, color: Colors.blue[400])
+                : Icon(Icons.offline_bolt, color: Colors.red),
           )
         ],
       ),
@@ -60,6 +75,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
         child: _ListViewUsuarios(),
       ),
     );
+    return _screen;
   }
 
   ListView _ListViewUsuarios() {
@@ -76,21 +92,28 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
       subtitle: Text(usuario.email),
       leading: CircleAvatar(
         backgroundColor: Colors.blue[200],
-        child: Text(usuario.nombre!.substring(0, 2)),
+        child: Text(usuario.nombre.substring(0, 2)),
       ),
       trailing: Container(
         width: 10,
         height: 10,
         decoration: BoxDecoration(
-            color: usuario.online! ? Colors.green[300] : Colors.red,
+            color: usuario.online ? Colors.green[300] : Colors.red,
             borderRadius: BorderRadius.circular(100)),
       ),
+      onTap: () {
+        final chatService = Provider.of<ChatService>(context, listen: false);
+        chatService.usuarioPara = usuario;
+        Navigator.pushNamed(context, ChatScreen.routeName);
+      },
     );
   }
 
   void _cargarUsuarios() async {
+    usuarios = await ususariosService.getUsuarios();
+    setState(() {});
     // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
+    // await Future.delayed(Duration(milliseconds: 1000));
     // if failed,use refreshFailed()
     _refreshController.refreshCompleted();
   }

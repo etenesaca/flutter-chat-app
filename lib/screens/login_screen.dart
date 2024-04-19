@@ -57,6 +57,8 @@ class __FormState extends State<_Form> {
   Widget build(BuildContext context) {
     final AuthService authService =
         Provider.of<AuthService>(context, listen: true);
+    final SocketService socketService =
+        Provider.of<SocketService>(context, listen: true);
     return Container(
       margin: const EdgeInsets.only(top: 50),
       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -83,8 +85,7 @@ class __FormState extends State<_Form> {
                     bool loginOk =
                         await authService.Login(emailCtrl.text, passCtrl.text);
                     if (loginOk) {
-                      mostrarAlerta(
-                          context, 'Login ok', authService.usuario!.nombre);
+                      socketService.connect();
                       Navigator.of(context)
                           .pushReplacementNamed(UsuariosScreen.routeName);
                     } else {

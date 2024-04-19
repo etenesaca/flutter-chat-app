@@ -128,9 +128,6 @@ class AuthService with ChangeNotifier {
 
   Future<bool> isLogged() async {
     final token = await _storage.read(key: tokenKey);
-    print("==========================================");
-    print(token);
-    print("==========================================");
     if (token == null || token!.isEmpty) {
       return false;
     }

@@ -1,5 +1,5 @@
 import 'package:chat/screens/screens.dart';
-import 'package:chat/services/auth_service.dart';
+import 'package:chat/services/services.dart';
 import 'package:chat/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -59,6 +59,8 @@ class __FormState extends State<_Form> {
   Widget build(BuildContext context) {
     final AuthService authService =
         Provider.of<AuthService>(context, listen: true);
+    final SocketService socketService =
+        Provider.of<SocketService>(context, listen: true);
 
     return Container(
       margin: const EdgeInsets.only(top: 50),
@@ -92,6 +94,7 @@ class __FormState extends State<_Form> {
                     bool RegisterOk = await authService.newUser(
                         nameCtrl.text, emailCtrl.text, passCtrl.text);
                     if (RegisterOk) {
+                      socketService.connect();
                       mostrarAlerta(context, 'Usuario creado correctamente',
                           authService.usuario!.nombre);
                       Navigator.of(context)
